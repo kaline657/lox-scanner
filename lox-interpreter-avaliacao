@@ -68,4 +68,3 @@ public class Interpreter implements Visitor<Object> {
         return object.toString();
     }
 }
-
