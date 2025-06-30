@@ -1,46 +1,45 @@
-# Projeto: Scanner - Interpretador Lox em Java
+# Projeto: Avaliação de Expressões - Interpretador Lox em Java
 
-Este projeto é baseado no livro *Crafting Interpreters*, de Robert Nystrom, e implementa a fase de **análise léxica (scanner)** da linguagem Lox, utilizando a linguagem **Java**, conforme a seção 4.7 do capítulo "Scanning".
-
+Este projeto é baseado no livro *Crafting Interpreters*, de Robert Nystrom, e avança na implementação do interpretador da linguagem Lox em Java, agora incluindo a avaliação de expressões (literais, agrupamentos, operações unárias e binárias), conforme o capítulo "Evaluating Expressions".
 
 ## Estrutura do Projeto
 
-O código está organizado no seguinte pacote:
-src/com/craftinginterpreters/lox/
-├── Lox.java # Classe principal que executa o interpretador
-├── Scanner.java # Responsável por escanear o código-fonte e gerar tokens
-├── Token.java # Representação de um token
-└── TokenType.java # Enum com os tipos de tokens reconhecidos
-##  Funcionamento
+Pacote: `src/com/craftinginterpreters/lox/`
 
-- A classe `Lox` é o ponto de entrada do interpretador.
-- Ela pode:
-  - Executar um script `.lox` passado como parâmetro.
-  - Ou abrir um prompt interativo no terminal.
-- O método `run()` usa o `Scanner` para:
-  - Identificar lexemas no código-fonte;
-  - Criar uma lista de tokens;
-  - Imprimir esses tokens no console.
+- `Lox.java`: Classe principal do interpretador
+- `Scanner.java`: Análise léxica e geração de tokens
+- `Parser.java`: Análise sintática e construção da AST
+- `Expr.java`: Definição das classes de expressão
+- `Visitor.java`: Interface para o padrão Visitor
+- `Interpreter.java`: Avaliação das expressões
+- `Token.java`: Representação de um token
+- `TokenType.java`: Enum com tipos de tokens
 
-## Funcionalidades Implementadas (até a Seção 4.7)
+## Funcionamento
 
-- Reconhecimento de:
-  - Palavras-chave
-  - Identificadores
-  - Strings e números
-  - Símbolos e operadores
-- Tratamento de espaços em branco e comentários
-- Aplicação do princípio **maximal munch**
-- Geração de mensagens de erro com linha e descrição
+A classe `Lox` executa o interpretador, que:
 
+- Lê e escaneia o código-fonte
+- Constrói a AST via `Parser`
+- Avalia a AST com `Interpreter`
+- Exibe o resultado das expressões no console
+
+## Funcionalidades Implementadas
+
+- Análise léxica completa (scanner)
+- Parser de expressões com precedência
+- Avaliação de:
+  - Literais
+  - Agrupamentos
+  - Operações unárias
+  - Operações binárias (com precedência correta)
 
 ## Integrantes
 
-- Kaline Maria Carvalho — [@kaline657](https://github.com/kaline657)
+Kaline Maria Carvalho — @kaline657
 
+## Referências
 
-##  Referência
+Nystrom, Robert. *Crafting Interpreters*.
 
-> Nystrom, Robert. *Crafting Interpreters*.  
-> Capítulo “Scanning”: https://craftinginterpreters.com/scanning.html
-
+Capítulo “Evaluating Expressions”: https://craftinginterpreters.com/evaluating-expressions.html
