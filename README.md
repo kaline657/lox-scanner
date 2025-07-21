@@ -1,45 +1,45 @@
-# Projeto: Avaliação de Expressões - Interpretador Lox em Java
+# Lox Scanner – Unidade 3 (Parte 1)
 
-Este projeto é baseado no livro *Crafting Interpreters*, de Robert Nystrom, e avança na implementação do interpretador da linguagem Lox em Java, agora incluindo a avaliação de expressões (literais, agrupamentos, operações unárias e binárias), conforme o capítulo "Evaluating Expressions".
+Repositório contendo a implementação da Parte 1 da Unidade 3 do curso baseado no livro *Crafting Interpreters*.
 
-## Estrutura do Projeto
+## 👩‍💻 Desenvolvido por:
+**Kaline Maria Carvalho**  
+GitHub: [kaline657](https://github.com/kaline657)
 
-Pacote: `src/com/craftinginterpreters/lox/`
+---
 
-- `Lox.java`: Classe principal do interpretador
-- `Scanner.java`: Análise léxica e geração de tokens
-- `Parser.java`: Análise sintática e construção da AST
-- `Expr.java`: Definição das classes de expressão
-- `Visitor.java`: Interface para o padrão Visitor
-- `Interpreter.java`: Avaliação das expressões
-- `Token.java`: Representação de um token
-- `TokenType.java`: Enum com tipos de tokens
+## 📘 Referência:
+Capítulos 8 e 9 do livro *Crafting Interpreters*  
+- Capítulo 8: **Statements and State**  
+- Capítulo 9: **Control Flow**
 
-## Funcionamento
+---
 
-A classe `Lox` executa o interpretador, que:
+## ✅ Funcionalidades implementadas:
 
-- Lê e escaneia o código-fonte
-- Constrói a AST via `Parser`
-- Avalia a AST com `Interpreter`
-- Exibe o resultado das expressões no console
+### ✅ Interface e estrutura principal
+- Implementação da interface `Stmt.Visitor<T>`
+- Ampliação da classe `Interpreter`
 
-## Funcionalidades Implementadas
+### ✅ Execução das instruções:
+- `print` – impressão de valores na tela
+- `var` – declaração de variáveis
+- `block` – blocos de escopo
+- `if` – condicionais (estrutura de controle de fluxo)
 
-- Análise léxica completa (scanner)
-- Parser de expressões com precedência
-- Avaliação de:
-  - Literais
-  - Agrupamentos
-  - Operações unárias
-  - Operações binárias (com precedência correta)
+---
 
-## Integrantes
+## 📁 Estrutura da pasta `lox/`:
+- `Interpreter.java` – interpretação e execução das instruções
+- `Environment.java` – controle de escopo e armazenamento de variáveis
+- `Expr.java` / `Stmt.java` – representações da árvore sintática
+- `Token.java`, `TokenType.java` – estrutura de tokens
 
-Kaline Maria Carvalho — @kaline657
+---
 
-## Referências
+## 💻 Execução
+Compile e execute os arquivos Java manualmente ou via terminal:
 
-Nystrom, Robert. *Crafting Interpreters*.
-
-Capítulo “Evaluating Expressions”: https://craftinginterpreters.com/evaluating-expressions.html
+```bash
+javac lox/*.java
+java lox.Lox
