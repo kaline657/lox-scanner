@@ -1,19 +1,42 @@
 package lox;
 
-class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
 
-    Object interpret(Expr expression) {
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+
+    private Environment environment = new Environment();
+
+    void interpret(List<Stmt> statements) {
         try {
-            return evaluate(expression);
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
-            return null;
         }
     }
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
     }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
+    void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    // ===== EXPRESSÕES =====
 
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
@@ -24,15 +47,42 @@ class Interpreter implements Expr.Visitor<Object> {
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
+
     @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
-            case BANG:
-                return !isTruthy(right);
-            case MINUS:
-                return -(double) right;
+            case BANG: return !isTruthy(right);
+            case MINUS: return -(double) right;
+        }
+
+        return null;
+    }
+
+    @Override
+    public Object visitBinaryExpr(Expr.Binary expr) {
+        Object left = evaluate(expr.left);
+        Object right = evaluate(expr.right);
+
+        switch (expr.operator.type) {
+            case BANG_EQUAL: return !isEqual(left, right);
+            case EQUAL_EQUAL: return isEqual(left, right);
+            case GREATER: return (double) left > (double) right;
+            case GREATER_EQUAL: return (double) left >= (double) right;
+            case LESS: return (double) left < (double) right;
+            case LESS_EQUAL: return (double) left <= (double) right;
+            case MINUS: return (double) left - (double) right;
+            case PLUS:
+                if (left instanceof Double && right instanceof Double) {
+                    return (double) left + (double) right;
+                }
+                if (left instanceof String && right instanceof String) {
+                    return (String) left + (String) right;
+                }
+                throw new RuntimeError(expr.operator, "Operandos devem ser dois números ou duas strings.");
+            case SLASH: return (double) left / (double) right;
+            case STAR: return (double) left * (double) right;
         }
 
         return null;
@@ -43,51 +93,14 @@ class Interpreter implements Expr.Visitor<Object> {
         if (object instanceof Boolean) return (boolean) object;
         return true;
     }
-    @Override
-    public Object visitBinaryExpr(Expr.Binary expr) {
-        Object left = evaluate(expr.left);
-        Object right = evaluate(expr.right);
-
-        switch (expr.operator.type) {
-            case BANG_EQUAL:
-                return !isEqual(left, right);
-            case EQUAL_EQUAL:
-                return isEqual(left, right);
-            case GREATER:
-                return (double) left > (double) right;
-            case GREATER_EQUAL:
-                return (double) left >= (double) right;
-            case LESS:
-                return (double) left < (double) right;
-            case LESS_EQUAL:
-                return (double) left <= (double) right;
-            case MINUS:
-                return (double) left - (double) right;
-            case PLUS:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double) left + (double) right;
-                }
-
-                if (left instanceof String && right instanceof String) {
-                    return (String) left + (String) right;
-                }
-
-                throw new RuntimeError(expr.operator, "Operandos devem ser dois números ou duas strings.");
-            case SLASH:
-                return (double) left / (double) right;
-            case STAR:
-                return (double) left * (double) right;
-        }
-
-        return null;
-    }
 
     private boolean isEqual(Object a, Object b) {
         if (a == null && b == null) return true;
         if (a == null) return false;
         return a.equals(b);
     }
-        private String stringify(Object object) {
+
+    private String stringify(Object object) {
         if (object == null) return "nil";
 
         if (object instanceof Double) {
@@ -100,57 +113,42 @@ class Interpreter implements Expr.Visitor<Object> {
 
         return object.toString();
     }
-}
-@Override
-public Void visitPrintStmt(Stmt.Print stmt) {
-    Object value = evaluate(stmt.expression);
-    System.out.println(stringify(value));
-    return null;
-}
-@Override
-public Void visitVarStmt(Stmt.Var stmt) {
-    Object value = null;
-    if (stmt.initializer != null) {
-        value = evaluate(stmt.initializer);
+
+    // ===== INSTRUÇÕES =====
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 
-    environment.define(stmt.name.lexeme, value);
-    return null;
-}
-void executeBlock(List<Stmt> statements, Environment environment) {
-    Environment previous = this.environment;
-    try {
-        this.environment = environment;
-        for (Stmt statement : statements) {
-            execute(statement);
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
         }
-    } finally {
-        this.environment = previous;
+
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
+        return null;
     }
 }
-@Override
-public Void visitBlockStmt(Stmt.Block stmt) {
-    executeBlock(stmt.statements, new Environment(environment));
-    return null;
-}
-@Override
-public Void visitIfStmt(Stmt.If stmt) {
-    if (isTruthy(evaluate(stmt.condition))) {
-        execute(stmt.thenBranch);
-    } else if (stmt.elseBranch != null) {
-        execute(stmt.elseBranch);
-    }
-    return null;
-}
-private boolean isTruthy(Object object) {
-    if (object == null) return false;
-    if (object instanceof Boolean) return (boolean)object;
-    return true;
-}
-private Object evaluate(Expr expr) {
-    return expr.accept(this);
-}
-private void execute(Stmt stmt) {
-    stmt.accept(this);
-}
+
 
