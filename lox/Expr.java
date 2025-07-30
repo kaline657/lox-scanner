@@ -1,5 +1,7 @@
 package lox;
 
+import java.util.List;
+
 interface Expr {
     <R> R accept(Visitor<R> visitor);
 
@@ -8,6 +10,7 @@ interface Expr {
         R visitGroupingExpr(Grouping expr);
         R visitUnaryExpr(Unary expr);
         R visitBinaryExpr(Binary expr);
+        R visitCallExpr(Call expr);
     }
 
     class Literal implements Expr {
@@ -42,5 +45,21 @@ interface Expr {
             this.right = right;
         }
         public <R> R accept(Visitor<R> visitor) { return visitor.visitBinaryExpr(this); }
+    }
+
+    class Call implements Expr {
+        final Expr callee;
+        final Token paren;
+        final List<Expr> arguments;
+
+        public Call(Expr callee, Token paren, List<Expr> arguments) {
+            this.callee = callee;
+            this.paren = paren;
+            this.arguments = arguments;
+        }
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCallExpr(this);
+        }
     }
 }
